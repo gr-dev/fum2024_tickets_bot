@@ -21,11 +21,11 @@ https://habr.com/ru/articles/585228/
 5. запустить приложение: `py bot.py`
 
 ## Запуск приложения в Docker
-`docker compose up -d`
+`docker compose --env-file .test.env up -d`
 
 пересобрать только бота:
 
-`docker compose --env-file .\.env  up -d  --no-deps --build bot`
+`docker compose --env-file .test.env  up -d  --no-deps --build bot`
 
 # Настройка проекта
 
