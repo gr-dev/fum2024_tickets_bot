@@ -32,6 +32,13 @@ class User(Base):
     ticketRequests = relationship("TicketRequest", back_populates="user")
     #tickets = relationship("Ticket", back_populates="user")
 
+class PaymentInfo(Base):
+    __tablename__ = "paymentInfos"
+    id = Column(Integer, primary_key=True, index=True)
+    message = Column(String, nullable=False)
+    additionalInfo = Column(String, nullable=True)
+    eventGroups = relationship("EventGroup", back_populates="paymentInfo")
+
 class UserRating(Base):
     __tablename__ = "userRatings"
     id = Column(Integer, primary_key=True, index=True)
@@ -57,6 +64,8 @@ class EventGroup(Base):
     name = Column(String)
     events = relationship("Event", back_populates="eventGroup", lazy="joined")
     hide = Column(Boolean, default = False)
+    paymentInfo = relationship("PaymentInfo", back_populates="eventGroups", lazy="joined")
+    paymentInfo_id = Column(Integer, ForeignKey("paymentInfos.id"), default=1)
 
 class Event(Base):
     __tablename__ = "events"
@@ -65,7 +74,6 @@ class Event(Base):
     eventDate = Column(DateTime)
     description = Column(String)
     displayUntil = Column(DateTime)
-    paymentInfo = Column(String)
     cost = Column(Integer)
     hide = Column(Boolean, default= False)
     eventGroupId = Column(Integer,  ForeignKey("eventGroups.id"), default=1,) #подразумеваю группировку событий по группам, например ФУМ или фестиваль

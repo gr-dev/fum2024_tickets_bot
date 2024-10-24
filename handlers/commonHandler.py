@@ -84,9 +84,10 @@ def get_actual_events(groupId: int):
 def build_event_keyboard(groupId: int):
     groupEvents = get_actual_events(groupId)
     builder = build_inlene_keyboard_for_event_group(groupEvents)
-    otherGroups = db.getEventGroups()
-    for group in otherGroups:
-        if group.id == groupId or group.hide == False:
+    allGroups = db.getEventGroups()
+    selectedGroup = next(filter(lambda g: g.id == groupId , allGroups), None)
+    for group in allGroups:
+        if group.id == groupId or group.hide == True or group.paymentInfo_id != selectedGroup.paymentInfo_id: # последнее условие для того чтобы избежать конфликта, если реквизиты разные
             continue
         #если в группе нет актуальных мероприятий, то ее не отображать
         exist = next(filter(lambda ev: ev.hide == False and ev.eventDate >= datetime.datetime.today() , group.events), None)
@@ -260,9 +261,29 @@ async def cmd_confirm_orderDetails(message: Message,
         await state_paymentConfirmation(freeMessage, state, internal_user_id, bot)
         return
     else:
+        userRequests = db.getTicketRequests()
+        userRequests = filter(lambda x: x.user_id == internal_user_id and x.status == 1, userRequests)
+        userRequests = list(userRequests)
+        #проверка, что реквизиты для всей корзины одни.
+        paymentInfoIds = []
+        for g in userRequests:
+            paymentInfoIds.append(g.event.eventGroup.paymentInfo_id)
+        #distinct
+        paymentInfoIds = list(set(paymentInfoIds))
+        #если реквизитов более одного
+        if(len(paymentInfoIds) > 1):
+            await message.reply(
+                text="Увы, я не могу обработать этот запрос. Пожалуйста, кликни /start и оформи билеты еще раз." 
+            )
+            return
+        paymentMessage = userRequests[0].event.eventGroup.paymentInfo.message
+        await message.answer(
+            text=f"Реквизиты для оплаты: {paymentMessage}",
+            reply_markup=ReplyKeyboardRemove(),
+            disable_web_page_preview=True
+        )
         await message.answer(
             text=stringHelper.GetText(MessageType.AwaitingPaymentMessage),
-            reply_markup=ReplyKeyboardRemove(),
             parse_mode=ParseMode.MARKDOWN_V2,
             disable_web_page_preview=True
         )
