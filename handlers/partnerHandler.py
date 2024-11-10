@@ -90,6 +90,7 @@ async def state_confirmation_file(message: Message,
     await message.reply(text="Отлично, спасибо!")
     userData = await state.get_data()
     contributionSize = userData[contributionSizeUserDataKey]
+    await message.answer_photo(photo=partnerStrings.ticketImageId, caption=partnerStrings.ticketCaption)
     ticketCount = 1
     if int(contributionSize) < 3600:
         messageText = strings.resultLess300
