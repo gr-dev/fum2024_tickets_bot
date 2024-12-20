@@ -1,6 +1,7 @@
 import datetime
 from datetime import timedelta
 import time
+import asyncio
 import re
 from aiogram import F, Router, types
 from aiogram.filters import Command
@@ -402,7 +403,18 @@ async def state_paymentConfirmation(message: Message,
         ticketRequestIdsToCompled.append(request.id)
         #TODO: в будущем, можно было бы сократить количество подключений
         try:
-            googleSheetsService.addCodeTicket(ticket)
+            success = False
+            tryCount = 0
+            while (not success and tryCount < 3):
+                try:
+                    tryCount+= 1
+                    googleSheetsService.addCodeTicket(ticket)
+                    success = True
+                except Exception as e:
+                    await asyncio.sleep(1)
+                    #если попыток уже было 3, то прокидываем исключение наверх
+                    if tryCount == 3:
+                        raise e
         except Exception as e:
             messageToAdminGroup = f"[commonHandler, createTicket]при записи в гугл таблицу произошла ошибка: {str(e)}"
             await bot.send_message(adminGroupChatId, messageToAdminGroup, parse_mode=ParseMode.HTML)
@@ -457,7 +469,7 @@ async def cmd_get_help(message: Message, state:
                        FSMContext, 
                        bot: Bot,
                        internal_user_id: int):
-    await resend_message_to_admin_group(message, bot, f"[help] Пользователь {message.from_user.full_name} запросил помощь:")
+    await resend_message_to_admin_group(message, bot, f"[help {message.chat.id}:{message.message_id}] Пользователь {message.from_user.full_name} запросил помощь. Ответ на это сообщение будет переслан пользователю. Поддерживается только текст!")
     tickets = db.getCodeTickets()
     userTickets =list(filter(lambda t: t.user_id == internal_user_id, tickets))
     actualTickets = sorted(userTickets, key = lambda ticket: ticket.created, reverse=True)

@@ -39,7 +39,21 @@ callback_notify = "notify_"
 
 notifyGroupUserDataKey = "notifyGroupKey"
 
-#скрыть мероприятие
+#ответ на запрос помощи пользователем
+#обработчик сработает если это ответ на сообщение, и сообщение, на которое отвечают начинается с '[help chatId:messageId]'
+@router.message(F.reply_to_message, F.reply_to_message.text.startswith('[help'), GroupIdFilter(adminGroupId))
+async def helpRequesReplyHandler(message: Message, bot: Bot):
+    ids = message.reply_to_message.text[6:].split(":",1)
+    chatId = ids[0]
+    messageId = ids[1].split("]")[0]
+    try:
+        await bot.send_message(chat_id=chatId, reply_to_message_id=messageId, text=message.text)
+        await bot.send_message(chat_id=chatId, reply_to_message_id=messageId, text="Если твой вопрос не решен и ты хочешь отправить еще одно сообщение, кликни /help Для продолжения работы с ботом, кликни /start")
+        await message.reply(f"Данное сообщение успешно переслано пользователю.")
+    except Exception as e:
+        await message.reply(f"Во время пересылки сообщения произошла ошибка: {str(e)}")
+
+
 @router.message(Command(commands=["hide"]), GroupIdFilter(adminGroupId))
 async def cmd_hide_event(message: Message, command: CommandObject, bot: Bot):
     events = db.getEvents()
