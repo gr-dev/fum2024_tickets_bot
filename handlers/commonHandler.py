@@ -16,7 +16,7 @@ from aiogram.enums import ParseMode
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from babel.dates import format_date, format_datetime, format_time
 from services import googleSheetsService
-from services import featureToggleService
+from services.featureToggleService import FeatureToggleService
 
 import db
 from db import CodeTicket
@@ -29,6 +29,7 @@ from filters.chat_type import ChatTypeFilter
 from stringHelper import CommonHandlerStringHelper, MessageType
 from states.orderStates import OrderStates
 from handlers import rootHandler
+from services import notificationService
 
 router = Router()
 
@@ -250,7 +251,10 @@ async def cmd_confirm_requests_and_go_to_details(message: Message,
 async def cmd_confirm_orderDetails(message: Message, 
                               state: FSMContext,
                               internal_user_id: int,
-                              bot: Bot):
+                              bot: Bot,                    
+                              notificationService: notificationService.NotificationService,
+                              ftService: FeatureToggleService
+                              ):
     userData = await state.get_data()
     db.confirmUserRequests(internal_user_id, userData[userData_orderDetalisKey])
     #костыль для бесплатных мероприятий
@@ -289,6 +293,7 @@ async def cmd_confirm_orderDetails(message: Message,
             disable_web_page_preview=True
         )
     await state.set_state(OrderStates.paymentAwaiting)
+    notificationService.addPaymentConfirmationNotification(message.chat.id)
 
 #возвожность исправить контактные данные
 @router.message(StateFilter(OrderStates.orderDetailsGetting), ChatTypeFilter("private"),F.text == cmd_btn_correct_details)
@@ -347,7 +352,9 @@ async def state_getting_order_details(message: Message, state: FSMContext):
 async def state_paymentConfirmation(message: Message, 
                            state: FSMContext,
                            internal_user_id: int,
-                           bot: Bot):
+                           bot: Bot,
+                           notificationService: notificationService.NotificationService):
+    notificationService.removePaymentConfirmationNotification(message.chat.id)
     messageToUpdate = await message.answer(
         text="Супер! Минутку! Готовлю билеты!")
     busket = db.getTicketRequests()
