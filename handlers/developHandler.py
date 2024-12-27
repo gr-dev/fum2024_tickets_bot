@@ -26,7 +26,8 @@ from config_reader import config
 from keyboards.simple_row import make_row_keyboard, make_vertical_keyboard
 from filters.any_attachment import AnyAttachmentFilter
 from filters.chat_type import ChatTypeFilter
-from stringHelper import CommonHandlerStringHelper, MessageType\
+from stringHelper import CommonHandlerStringHelper, MessageType
+from services import featureToggleService, notificationService
 
 from services.featureToggleService import FeatureToggleService
 
@@ -41,10 +42,8 @@ def getEventGroups():
 #@router.message(ChatTypeFilter("private"), F.text == "Мои билеты")
 async def cmd_test (message: Message, 
                     internal_user_id: int,
-                    apscheduler: AsyncIOScheduler,
+                    notificationService: notificationService.NotificationService,
                     ftService: FeatureToggleService):
-    tickets = db.getCodeTickets()
-    googleSheetsService.addCodeTicket(tickets[0])
     result = ftService.getFeatureToggleState(ftService.exampleFeatureToggle)
     print(result)
 
