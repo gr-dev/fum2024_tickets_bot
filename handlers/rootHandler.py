@@ -54,7 +54,7 @@ async def cmd_start(message: Message,
                     state: FSMContext,
                     internal_user_id: int,
                     ftService: featureToggleService.FeatureToggleService,
-                    command: CommandObject):
+                    command: CommandObject = None):
     #TODO: входящие параметры обрабатывать без исключений
     try:
         args = command.args
