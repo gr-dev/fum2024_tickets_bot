@@ -218,7 +218,7 @@ async def cmd_confirm_selected(message: Message,
 
 #оформить корзину заново на этапе выбора эвентов
 @router.message(StateFilter(OrderStates.eventSelection), ChatTypeFilter("private"), F.text == cmd_btn_recreate_order )
-async def cmd_back_to_start(message: Message, state: FSMContext, internal_user_id: int, ftService: featureToggleService.FeatureToggleService ):
+async def cmd_back_to_start(message: Message, state: FSMContext, internal_user_id: int, ftService: FeatureToggleService ):
     await rootHandler.cmd_start(message, state, internal_user_id, ftService )
 
 #подтвердить набранную корзину

@@ -3,7 +3,7 @@ from datetime import timedelta
 import time
 import re
 from aiogram import F, Router, types
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
@@ -15,6 +15,8 @@ from aiogram.enums import ParseMode
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from babel.dates import format_date, format_datetime, format_time
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from aiogram.utils.deep_linking import decode_payload
+
 
 import db
 from db import CodeTicket
@@ -51,7 +53,15 @@ stringHelper = CommonHandlerStringHelper()
 async def cmd_start(message: Message, 
                     state: FSMContext,
                     internal_user_id: int,
-                    ftService: featureToggleService.FeatureToggleService):
+                    ftService: featureToggleService.FeatureToggleService,
+                    command: CommandObject):
+    #TODO: входящие параметры обрабатывать без исключений
+    try:
+        args = command.args
+        if args is not None:
+            payload = decode_payload(args)
+    except: 
+        pass
     await state.clear()
     #отменяю все запросы, кроме тех что уже помечены как оплаченные
     db.cancelUserticketRequestsExcludeCompleted(internal_user_id)
