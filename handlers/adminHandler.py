@@ -189,7 +189,7 @@ async def callback_switch_ft(callback: types.CallbackQuery,
                                   bot: Bot):
     ftId = callback.data.split("_")[1]
     ft = db.switchFtStatus(ftId)
-    await callback.message.edit_text(text=f"Значение фичатогла {ft.id} '{ft.name}' изменено на '{ft.enabled}' пользователем {callback.from_user.full_name}" )
+    await callback.message.edit_text(text=f"Значение фичатогла {ft.id} '{ft.name}' изменено на '{ft.enabled}' пользователем {callback.from_user.full_name}. Изменения будет видно через 5 минут!" )
     await callback.answer(text="Фт переключен!")
 
 #ответить пользователю в админ группе, сообщение будет переслано ему лично
