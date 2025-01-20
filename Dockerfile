@@ -41,7 +41,7 @@ RUN --mount=type=cache,target=/root/.cache/pip
 # Switch to the non-privileged user to run the application.
 #USER appuser
 
-COPY . .
+COPY ./src/. .
 RUN pip install -r requirements.txt
 
 # Expose the port that the application listens on.
