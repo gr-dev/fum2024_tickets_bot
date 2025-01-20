@@ -169,3 +169,4 @@ misc/fonts
 #.idea/
 src/googleCredentials.json
 .test.env
+.env
