@@ -5,15 +5,17 @@ import db
 from db import UpdateLog
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, timedelta
-from services import featureToggleService, notificationService
+from services import featureToggleService, notificationService, ticketService
     
 #https://botfather.dev/blog/zapusk-funkczij-v-bote-po-tajmeru#integration
 class CommonServicesMiddleware(BaseMiddleware):
     def __init__(self, 
                  notificationService: notificationService.NotificationService, 
-                 ftService: featureToggleService.FeatureToggleService):
+                 ftService: featureToggleService.FeatureToggleService,
+                 ticketServ: ticketService.TicketService):
         self.notificationService = notificationService
         self.ftService = ftService
+        self.ticketServ = ticketServ
         #super().__init__()
     
     async def __call__(self, 
@@ -25,5 +27,6 @@ class CommonServicesMiddleware(BaseMiddleware):
                         ) -> Any:
         data['notificationService'] = self.notificationService
         data['ftService'] = self.ftService
+        data['ticketService'] = self.ticketServ
         return await handler(event, data)
         #return await super().__call__(handler, event, data)

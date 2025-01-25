@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
-
+import os
 
 class Settings(BaseSettings):
     # Желательно вместо str использовать SecretStr 
@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     # через model_config
     # В данном случае будет использоваться файла .env, который будет прочитан
     # с кодировкой UTF-8
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
+    print(f"ENVIRONMENT file is: .{os.environ['ENVIRONMENT']}.env")
+    model_config = SettingsConfigDict(env_file=f".{os.environ['ENVIRONMENT']}.env", env_file_encoding='utf-8', extra="allow")
 
 
 # При импорте файла сразу создастся 

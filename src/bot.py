@@ -15,7 +15,7 @@ from middlewares import commonMiddleware
 from middlewares import commonServicesMiddleware
 import pgStorage
 from config_reader import config
-from services import featureToggleService, notificationService
+from services import featureToggleService, notificationService, ticketService
 
 def register_all_middlewares(dp:Dispatcher, scheduler: AsyncIOScheduler, bot: Bot):
     #middleware that log events, insert internal_user_id
@@ -23,7 +23,8 @@ def register_all_middlewares(dp:Dispatcher, scheduler: AsyncIOScheduler, bot: Bo
     ftService = featureToggleService.FeatureToggleService()
     #регистрация на все обновления
     notificationServ = notificationService.NotificationService(scheduler, bot)
-    dp.update.middleware.register(commonServicesMiddleware.CommonServicesMiddleware(notificationServ, ftService))
+    ticketServ = ticketService.TicketService()
+    dp.update.middleware.register(commonServicesMiddleware.CommonServicesMiddleware(notificationServ, ftService, ticketServ))
  
 def register_all_handlers(dp:Dispatcher):
     if config.ENVIRONMENT.get_secret_value() == "development":

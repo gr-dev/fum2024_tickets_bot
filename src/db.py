@@ -146,6 +146,12 @@ class UserDataState(Base):
     telegram_user_id = Column(BIGINT, index=True)
     chat_id = Column(BIGINT)
     data = Column(JSON)
+
+class EventTicketsLimit(Base):
+    __tablename__ = "eventTicketsLimit"
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(Integer, ForeignKey("events.id"))
+    count = Column(Integer, nullable=False)
   
 # создаем таблицы
 #это использовал при sqlite
@@ -228,6 +234,10 @@ def getEvent(event_id: Integer) -> Event | None:
 def getEvents() -> list[Event]:
     with Session(bind=engine) as db:
         return db.query(Event).all()
+    
+def getEventTicketsLimit() -> list[EventTicketsLimit]:
+    with Session(bind=engine) as db:
+        return db.query(EventTicketsLimit).all()
 
 def getEventGroups() -> list[EventGroup]:
     with Session(bind=engine) as db:

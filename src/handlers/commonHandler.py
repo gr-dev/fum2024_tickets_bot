@@ -15,7 +15,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.enums import ParseMode
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from babel.dates import format_date, format_datetime, format_time
-from services import googleSheetsService
+from services import googleSheetsService, ticketService
 from services.featureToggleService import FeatureToggleService
 
 import db
@@ -132,8 +132,15 @@ async def state_selecting_event_group(message: Message,
 async def callback_event_selected(callback: types.CallbackQuery, 
                                   internal_user_id: int,
                                   state: FSMContext,
-                                  bot: Bot):
+                                  bot: Bot,
+                                  ticketService: ticketService.TicketService):
     eventId = callback.data.split("_")[1]
+    if ticketService.isTicketLimitReached(eventId):
+        await callback.answer(
+        text="Увы, билеты на это мероприятие закончились!",
+        show_alert=False
+    )
+        return
     db.addUserTicketRequest(eventId, internal_user_id)
     userRequests = db.getTicketRequests()
     userRequests = filter(lambda x: x.user_id == internal_user_id and x.status == 0, userRequests)

@@ -16,6 +16,11 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/bot.py",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src/",
+                "ENVIRONMENT": "DEBUG"
+            },
+            "cwd": "${workspaceFolder}/src/",
             "console": "integratedTerminal"
         }
     ]
