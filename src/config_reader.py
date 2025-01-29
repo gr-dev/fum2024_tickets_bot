@@ -12,13 +12,14 @@ class Settings(BaseSettings):
     ENVIRONMENT: SecretStr
     GOOGLECREDENTIALS: SecretStr
     GOOGLESHEET: SecretStr
-
-    # Начиная со второй версии pydantic, настройки класса настроек задаются
-    # через model_config
-    # В данном случае будет использоваться файла .env, который будет прочитан
-    # с кодировкой UTF-8
-    print(f"ENVIRONMENT file is: .{os.environ['ENVIRONMENT']}.env")
-    model_config = SettingsConfigDict(env_file=f".{os.environ['ENVIRONMENT']}.env", env_file_encoding='utf-8', extra="allow")
+    #TODO: не удается прокинуть переменную в этот класс. КОСТЫЛЬ! ОПАСНО! ИЗБАВИТЬСЯ!
+    #Добавил, когда не удавалось нормально управлять миграциями
+    if "ENVIRONMENT" in os.environ.keys():
+        print(f"ENVIRONMENT file is: .{os.environ['ENVIRONMENT']}.env")
+        model_config = SettingsConfigDict(env_file=f".{os.environ['ENVIRONMENT']}.env", env_file_encoding='utf-8', extra="allow")
+    else:
+        print(f"Warning! Default config is using! .DEBUG.env")
+        model_config = SettingsConfigDict(env_file=f".DEBUG.env", env_file_encoding='utf-8', extra="allow")
 
 
 # При импорте файла сразу создастся 

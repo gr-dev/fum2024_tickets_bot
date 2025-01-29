@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import select
 from sqlalchemy.orm import lazyload
+from sqlalchemy import or_
 
 from aiogram.types import TelegramObject
 from aiogram.types import  User as TelegramUser
@@ -78,6 +79,7 @@ class Event(Base):
     hide = Column(Boolean, default= False)
     eventGroupId = Column(Integer,  ForeignKey("eventGroups.id"), default=1,) #подразумеваю группировку событий по группам, например ФУМ или фестиваль
     eventGroup = relationship("EventGroup", back_populates="events", lazy="joined")
+    isArchived = Column(Boolean, default=False)
     #tickets = relationship("Ticket", back_populates="Event", lazy="joined")
 
 class Ticket(Base):
@@ -231,9 +233,11 @@ def getEvent(event_id: Integer) -> Event | None:
         event = db.get(Event, event_id)
         return event
 
-def getEvents() -> list[Event]:
+def getEvents(getAchived: Boolean = False) -> list[Event]: 
     with Session(bind=engine) as db:
-        return db.query(Event).all()
+        if(getAchived):
+            return db.query(Event).all()
+        return db.query(Event).filter(or_(Event.isArchived == False, Event.isArchived.is_(None)))
     
 def getEventTicketsLimit() -> list[EventTicketsLimit]:
     with Session(bind=engine) as db:
