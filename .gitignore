@@ -170,3 +170,5 @@ misc/fonts
 src/googleCredentials.json
 .test.env
 .env
+package-lock.json
+src/.DEBUG.env
