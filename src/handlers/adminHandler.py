@@ -10,6 +10,7 @@ from aiogram.filters.command import CommandObject
 from config_reader import config
 from aiogram.enums import ParseMode
 from filters.chat_type import ChatTypeFilter
+from aiogram.exceptions import TelegramForbiddenError
 
 import db
 import services.imageTicketGenerator
@@ -138,7 +139,7 @@ async def callback_set_notify_group(callback: types.CallbackQuery,
     await state.update_data({notifyGroupUserDataKey: groupOrEventId})
 
     await callback.message.edit_text(text=f"""[notify]Будет создано уведомление группе '{groupOrEventId}'. 
-Текст следущего сообщения от <b>{callback.from_user.full_name}</b> будет перслан пользователям, купившим билет на выбранное мероприятие или всем! 
+Любое следующее сообщение от <b>{callback.from_user.full_name}</b> будет перслано пользователям, купившим билет на выбранное мероприятие или всем! 
 /cancel для отмены режима ввода уведомления""",
                                       parse_mode=ParseMode.HTML )
     await callback.answer(text="Введи текст уведомления")
@@ -156,31 +157,54 @@ async def notify_users_message(message: Message,
         text = message.text
         usersGroup = userData[notifyGroupUserDataKey]
         users = db.getUsers()
-        counter = 0
         if usersGroup == "all":
+            chatIds = []
             for user in users:
-                        await bot.send_message(
-                            text= text,
-                            chat_id= user.telegramId
-                        )
-                        counter +=1
-            await message.reply(f"[notify]Отправлено {counter} уведомлений c текстом '{text}'. Уведомление инициировано пользователем {message.from_user.full_name}")
+                chatIds.append(user.telegramId)
+            summary = await forwardMessageToChats(bot, message, chatIds)
+            await message.reply(f"[notify]Уведомление инициировано пользователем {message.from_user.full_name}.\n {summary}")
         else:
             tickets = db.getCodeTickets()
             tickets = list(filter(lambda x: x.event_id == int(usersGroup), tickets))
+            #из тиектов получаю пользовательские id
             userIds = map(lambda x: x.user_id, tickets)
+            #уникальные знаения чтобы были
             userIds = list(set(userIds))
-            for userInternalId in userIds:
-                await bot.send_message(
-                    text= text,
-                    chat_id= next( u for u in users if u.id == userInternalId).telegramId
-                )
-                counter +=1
-            await message.reply(f"[notify]Отправлено {counter} уведомлений c текстом '{text}'. Уведомление инициировано пользователем {message.from_user.full_name}")
+            telegramUserIds = []
+            for userId in userIds:
+                telegramUserId = next(filter(lambda x: x.id == userId, users )).telegramId
+                telegramUserIds.append(telegramUserId)
+            summary = await forwardMessageToChats(bot, message, telegramUserIds)
+            await message.reply(f"[notify]Сообщение переслано. Уведомление инициировано пользователем {message.from_user.full_name} \n {summary}")
     except Exception as e:
         await message.reply(text=f"Во время создания уведомлений произошло исключение {str(e)}")
     await state.update_data({notifyGroupUserDataKey: None})
     await state.set_state(None)
+
+async def forwardMessageToChats(bot: Bot, message: Message, chatIds: int):
+    summary = ""
+    successCount = 0
+    blockedCount = 0
+    otherErrors = ""
+    for chatId in chatIds:
+            try:
+                await bot.forward_message(
+                    message_id=message.message_id,
+                    chat_id= chatId,
+                    from_chat_id=message.chat.id               
+                    )
+                successCount=+1
+            except TelegramForbiddenError:
+                print(f"пользователь {chatId} заблокировал бота")
+                blockedCount+=1
+            except Exception as e:
+                otherErrors+= {str(e)}
+    if blockedCount !=0:
+        summary = f"Пользователей, заблокировавших бота: {blockedCount}.\n"
+    if otherErrors != "":
+        summary += f"Иные ошибки: {otherErrors}\n"
+    summary = summary + f"Сообщение переслано {successCount} раз."
+    return summary
 
 @router.callback_query(F.data.startswith(callback_switch_status_callback_key))
 async def callback_switch_ft(callback: types.CallbackQuery, 
