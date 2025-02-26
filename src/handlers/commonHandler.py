@@ -141,6 +141,23 @@ async def callback_event_selected(callback: types.CallbackQuery,
         show_alert=False
     )
         return
+
+    userRequests = db.getTicketRequests()
+    userRequests = filter(lambda x: x.user_id == internal_user_id and x.status == 0, userRequests)
+    selected_event = db.getEvent(eventId)
+
+    ticket_request: db.TicketRequest
+    for ticket_request in userRequests:
+        if ticket_request.event.paymentInfo_id != selected_event.paymentInfo_id:
+            await callback.bot.send_message(
+                callback.message.chat.id,
+                text=(
+                    "К сожалению у этого мероприятия другие реквизиты для оплаты. "
+                    "Заказ билетов для него нужно оформить отдельно"
+                ),
+            )
+            return
+
     db.addUserTicketRequest(eventId, internal_user_id)
     userRequests = db.getTicketRequests()
     userRequests = filter(lambda x: x.user_id == internal_user_id and x.status == 0, userRequests)

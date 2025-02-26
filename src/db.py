@@ -28,7 +28,7 @@ class Base(DeclarativeBase): pass
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True) #id пользователя во внутренней базе данных
-    name = Column(String)  
+    name = Column(String)
     telegramId = Column(BIGINT)
     ticketRequests = relationship("TicketRequest", back_populates="user")
     #tickets = relationship("Ticket", back_populates="user")
@@ -38,7 +38,7 @@ class PaymentInfo(Base):
     id = Column(Integer, primary_key=True, index=True)
     message = Column(String, nullable=False)
     additionalInfo = Column(String, nullable=True)
-    eventGroups = relationship("EventGroup", back_populates="paymentInfo")
+    event = relationship("Event", back_populates="paymentInfo")
 
 class UserRating(Base):
     __tablename__ = "userRatings"
@@ -65,8 +65,6 @@ class EventGroup(Base):
     name = Column(String)
     events = relationship("Event", back_populates="eventGroup", lazy="joined")
     hide = Column(Boolean, default = False)
-    paymentInfo = relationship("PaymentInfo", back_populates="eventGroups", lazy="joined")
-    paymentInfo_id = Column(Integer, ForeignKey("paymentInfos.id"), default=1)
 
 class Event(Base):
     __tablename__ = "events"
@@ -80,6 +78,8 @@ class Event(Base):
     eventGroupId = Column(Integer,  ForeignKey("eventGroups.id"), default=1,) #подразумеваю группировку событий по группам, например ФУМ или фестиваль
     eventGroup = relationship("EventGroup", back_populates="events", lazy="joined")
     isArchived = Column(Boolean, default=False)
+    paymentInfo = relationship("PaymentInfo", back_populates="event", lazy="joined")
+    paymentInfo_id = Column(Integer, ForeignKey("paymentInfos.id"), nullable=True)
     #tickets = relationship("Ticket", back_populates="Event", lazy="joined")
 
 class Ticket(Base):
