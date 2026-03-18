@@ -10,6 +10,8 @@ from alembic import command
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_date, format_datetime, format_time
 from datetime import datetime
+from aiogram.client.session.aiohttp import AiohttpSession
+
 
 from middlewares import commonMiddleware
 from middlewares import commonServicesMiddleware
@@ -36,11 +38,16 @@ def register_all_handlers(dp:Dispatcher):
     dp.include_router(exceptionHandler.router)
 
 async def main():
+
     logging.basicConfig(
         level=logging.INFO,
         format=u'%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s',
     )
-    bot = Bot(token=config.bot_token.get_secret_value())
+    if config.ENVIRONMENT.get_secret_value() == "development":
+        bot = Bot(token=config.bot_token.get_secret_value())
+    else:
+        session = AiohttpSession(proxy=config.proxy.get_secret_value())
+        bot = Bot(token=config.bot_token.get_secret_value(), session = session)
     dp = Dispatcher(storage=pgStorage.PgStorage())
     sheduler = AsyncIOScheduler(timezone="Asia/Irkutsk")
     register_all_middlewares(dp, sheduler, bot)

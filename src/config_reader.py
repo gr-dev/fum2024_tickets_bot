@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     PARTNER_EVENT_ID: SecretStr
     ENVIRONMENT: SecretStr
     GOOGLECREDENTIALS: SecretStr
+    proxy: SecretStr
     GOOGLESHEET: SecretStr
     #TODO: не удается прокинуть переменную в этот класс. КОСТЫЛЬ! ОПАСНО! ИЗБАВИТЬСЯ!
     #Добавил, когда не удавалось нормально управлять миграциями

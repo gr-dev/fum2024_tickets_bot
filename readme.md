@@ -64,6 +64,8 @@ dbVolumeName = "paymentBot-db-test"
 
 pgAdminVolumeName = "paymentBot-dbAdmin-test"
 
+proxy = "http://user:password@proxy_value:45100"
+
 PARTNER_EVENT_ID = "5" # эта переменная реализована специально для вкладки "хочу стать партнером". Так как Id фестиваля разный, ничего лучше не придумал чем конфигурировать таким образом
 
 ENVIRONMENT = "development" #ввел для использования developmentHandler
