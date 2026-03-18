@@ -193,7 +193,7 @@ async def forwardMessageToChats(bot: Bot, message: Message, chatIds: int):
                     chat_id= chatId,
                     from_chat_id=message.chat.id               
                     )
-                successCount=+1
+                successCount+=1
             except TelegramForbiddenError:
                 print(f"пользователь {chatId} заблокировал бота")
                 blockedCount+=1
@@ -203,7 +203,7 @@ async def forwardMessageToChats(bot: Bot, message: Message, chatIds: int):
         summary = f"Пользователей, заблокировавших бота: {blockedCount}.\n"
     if otherErrors != "":
         summary += f"Иные ошибки: {otherErrors}\n"
-    summary = summary + f"Сообщение переслано {successCount} раз."
+    summary = summary + f"Сообщение переслано {successCount} раз(а)."
     return summary
 
 @router.callback_query(F.data.startswith(callback_switch_status_callback_key))

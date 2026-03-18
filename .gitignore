@@ -172,3 +172,4 @@ src/googleCredentials.json
 .env
 package-lock.json
 src/.DEBUG.env
+src/googleCredentials.json
